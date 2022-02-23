@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="shortcut icon" href="#" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="css/covid2022_login.css">
+  <script defer src="js/covid2022_login.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';">
+</head>
+
+<body>
+  <main id="main-holder">
+    <h1 id="login-header">入住個案備註記錄系統</h1>
+    
+    <div id="login-error-msg-holder">
+      <p id="login-error-msg">用戶名稱 或 密碼不正確</p>
+    </div>
+    
+    <form id="login-form">
+      <input type="text" name="username" id="username-field" class="login-form-field" placeholder="用戶名稱">
+      <input type="password" name="password" id="password-field" class="login-form-field" placeholder="密碼">
+      <input type="submit" value="登入" id="login-form-submit">
+    </form>
+  
+  </main>
+</body>
+
+</html>

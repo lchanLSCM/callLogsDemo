@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> <!--skip-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="js/covid2022_edit.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/covid2022_edit.css" />
+    <script type="text/javascript">
+      function preventBack() { window.history.forward(); }
+      setTimeout("preventBack()", 0);
+      window.onunload = function () { null };
+  </script>
+  <script type="text/javascript" src="js/covid2022_login.js"></script> 
+   <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';">
+<head>
+<style>
+    
+</style>
+</head>
+<body>
+
+
+
+
+<div class="sidebar">
+    <h2 class="systemName">個案備註記錄系統</h2>
+    <a id="navbar_overview" class="active" onclick="changeToOverviewPage();">個案備註記錄</a>
+    <a id="navbar_username" style="display: none;" onclick="changeToUsernamePage();">入住記錄</a>
+    <a id="navbar_userDetails" onclick="changeToUserDetailsPage();" style="display: none;">詳細個人資料</a>
+    <a id="navbar_result"onclick="changeToResultPage();" style="display: none;">評估資料及結果</a>
+    <a id="navbar_logout" onclick="window.location.href = 'covid2022_login.html';">登出</a>
+</div>
+  
+<div id="overview_page" style="display:block;" class="box">
+  <div class="topTitleBar">    
+      <h2 class="topTitle">個案備註記錄</h2>
+  </div>
+  <div class="item">
+    <h3 style="width:200px;">電話號碼</h3>
+    <div >
+      <form id="searchPhoneNumberForm"> 
+        <input id="searchPhoneNumberInput" type="text" onkeyup="console.log('Filt'); setSeachbuttonAvailabilty();" placeholder="請輸入電話號碼.." title="請輸入電話號碼" />
+      </form>
+    </div>
+    <div id="searchPhoneNumberFormWidth">    
+      <button id="searchPhoneNumberbutton" disabled onclick="searchRecordByPhoneNumber();"  type="submit">搜索</button>
+      <button id="searchAllbutton" onclick="displayLoading();console.log('Open2');getAllCovidRecord();" type="submit">顯示全部記錄</button>
+      <button id="hiddenSearchAllButton" onclick="getAllCovidRecord();" type="submit" hidden></button>
+      <button id="searchPhoneNumberbutton" onclick="resetSearchRecordByPhoneNumber();" type="submit">重置</button>  
+      <button type="submit" onclick="openCreateModel();">新增備註</button>
+      <div id="loading"></div>
+    </div>
+
+    <br>
+    
+  </div>
+  
+  <div id="logResult" style="display:none;" class="item">  
+    <div style="width:1500px;">
+      <input type="text" id="titleFilterInput" onkeyup="titleFiltering();" onfocus="focusOnTitleFilterInputs();" placeholder="搜索標題.." title="請輸入標題">
+      <input type="text" id="contentFilterInput" onkeyup="contentFiltering()" onfocus="focusOnContentFilterInputs();" placeholder="搜索備註.." title="請輸入備註">
+      <input type="text" id="phoneNoFilterInput" onkeyup="phoneNoFiltering()"  onfocus="focusOnPhoneNoFilterInputs();"placeholder="搜索電話號碼.." title="請輸入電話號碼">
+      <input type="text" id="nameFilterInput" onkeyup="nameFiltering()" onfocus="focusOnNameFilterInputs();" placeholder="搜索名字.." title="請輸入名字">
+      <span style="width: 500px;">
+        <select id="statusFilterInput" name="title" placeholder="搜索狀態.." title="請輸入狀態" onchange="statusFiltering()" onfocus="focusOnStatusFilterInputs();" style=" position: relative; top: 0px; ">
+              <option value="">全部</option>
+              <option value="處理中">處理中</option>
+              <option value="已處理">已處理</option>
+            </select>
+      </span>
+      <input type="text" id="replyFilterInput" onkeyup="replyFiltering()" onfocus="focusOnReplyFilterInputs();" placeholder="搜索回覆.." title="請輸入回覆">
+      <input type="text" id="followedByFilterInput" onkeyup="followedByFiltering()"  onfocus="focusOnfollowedByFilterInputs();"placeholder="搜索跟進人員.." title="請輸入跟進人員">
+
+      <span id="page_selection_area" style="width: 500px; position: relative; margin-left: 50px; color: rgb(75, 75, 75);">
+        <!-- <select id="statusFilterInput" name="title" placeholder="搜索狀態.." title="請輸入狀態" onchange="statusFiltering()" style="height: 26px; position: relative; top: 1px; width: 90px;">
+              <option value="">全部</option>
+              <option value="處理中">處理中</option>
+              <option value="已處理">已處理</option>
+            </select> -->
+          <button id="pageUpBtn" style="margin-right: -8px;" onclick="pageUp()">上一頁 <span style="width: 10px;"></span></button>
+         <span style="padding-left: 18px; padding-right: 18px; padding-top: 12px; padding-bottom: 11px; background-color: rgb(252, 252, 252); position: relative; z-index: 1;">
+          第 <span id="current_page_text"  >0</span> 頁   
+         </span>  
+         <button id="pageDownBtn" style="margin-left: -4px;" onclick="pageDown()">下一頁</button>
+         <span style="margin-left: 50px;">
+          <span id="number_of_result_text">0</span> 個結果  - 
+        </span>
+         <span style="">
+          共 <span id="number_of_page_text">0</span> 頁
+        </span>
+
+      </span>
+        <!-- <option value="">處理中</option> -->
+
+
+    </div>  
+    <br>
+    <div id="shadowTable">
+      <table  style=" align-items: left;" id="table_header" >
+      </table>
+      <div id="table_div">
+        <div id="inner_table_div">
+          <table  style=" align-items: left;" id="table" >
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div id="noResultLabel" style="display:none;" class="item">        
+    <br>
+    <br>
+    <br>
+    <h2 class="noResultLabelText">沒有符合記錄</h2>
+    <br>
+
+    <br><br><br>
+</div>
+<div id="noResultLabel_reset" style="display:block;" class="item">        
+  <br>
+  <br>
+  <br>
+  <h2 class="noResultLabelText_reset">請輸入電話號碼以搜索備註記錄</h2>
+  <br>
+
+  <br><br><br>
+</div>
+  <br>
+  
+</div>
+
+<div id="username_page" style="display:none;" class="box">
+    <div class="topTitleBar">    
+        <h2 class="topTitle">入住記錄</h2>
+    </div>
+    <br>
+    <div class="item">
+    <form id="searchPhoneNumberForm_no"> 
+      
+姓:<input type="text" name="name" placeholder="Last" value="陳"/>
+名:<input type="text" name="name" placeholder="First" value="大文"/>
+
+        <br>
+電話號碼:<input type="text" name="name" value="24339209"/>
+        <br>
+房號: <input type="text" name="name" value="24339209"/>
+        <br>
+開始隔離日期:<input type="date" name="name" value="2021-12-11" required/>
+          <i class="fas"></i>
+完成隔離日期:<input type="date" name="name" value="2021-12-30" required/>
+          <i class="fas"></i>
+電郵地址 (選填): <input type="text" name="name"/>
+  
+        <br>
+出生日期:<input type="date" name="name" value="1952-12-11" required/>
+          <i class="fas"></i>
+        
+      </div> 
+    </form>
+    
+      <br><br>
+
+      <span class="client-save-btn-block">
+        <button type="submit">儲存</button>
+      </span>
+      <span class="client-reset-btn-block">
+          <button type="submit">重置</button>
+        </span>
+    
+
+  <br><br><br>
+</div>
+  
+<div id="userDetails_page" style="display:none;" class="box">
+    <div class="topTitleBar">    
+        <h2 class="topTitle">詳細個人資料</h2>
+    </div>
+
+      <br>
+      <div class="item">
+        <h3 class="formSubtitle">通訊地址</h3>
+        <input type="text" name="name" placeholder="Street address" style="width:700px" value="Level 20, Greenwich Centre, "/>
+        <br><br>
+        <input type="text" name="name" placeholder="Street address line 2" style="width:700px" value="260 Fortress Hill Rd, & King's Rd, North Point"/>
+        <br><br>
+        <div class="city-item" >
+          <select>
+            <option value="">地區</option>
+            <option value="1">新界</option>
+            <option value="2">九龍</option>
+            <option value="3" selected>香港島</option>
+            <option value="4">其他</option>
+          </select>
+        </div>
+      </div>
+      <br>
+    
+      <div class="item">
+        <h3>電郵地址 (選填)</h3>
+        <input type="text" name="name"/>
+      </div>
+      <br>
+      <div class="item">
+        <h3>電話號碼</h3>
+        <input type="text" name="name" value="24339209"/>
+      </div>
+      <br>
+      <div class="item">
+        <h3>出生日期</h3>
+        <input type="date" name="name" value="1952-12-11" required/>
+        <i class="fas"></i>
+      </div>
+      <br>
+      <div class="item">
+        <h3>檔案類別</h3>
+        <select>
+          <option value="">請選擇</option>
+          <option value="1" selected>藥物治療</option>
+          <option value="2">餐單安排</option>
+          <option value="3">社工服務</option>
+          <option value="4">日常衣物</option>
+          <option value="5">家居事務</option>
+          <option value="6">各類津貼</option>
+          <option value="7">其他</option>
+        </select>
+      </div>
+      <br>
+      <div class="item">
+        <h3>相關藥劑師 (如有)</h3>
+        <input type="text" name="name"/>
+      </div>
+      <br>
+      <div class="item">
+        <h3>相關藥房 (如有)</h3>
+        <input type="text" name="name"/>
+      </div>
+      <br>
+    
+      <div class="item">
+        <h3>備註 (選填)</h3>
+        <textarea rows="5" style="width:700px"></textarea>
+        <br> <br> <br>
+        <span class="client-save-btn-block">
+            <button type="submit">儲存</button>
+          </span>
+          <span class="client-reset-btn-block">
+              <button type="submit">重置</button>
+            </span>
+      </div>
+     
+ 
+        <br><br><br>
+</div>
+  
+
+  
+<div id="result_page" style="display:none;" class="box">
+      <div class="topTitleBar">    
+        <h2 class="topTitle">評估資料及結果</h2>
+    </div>
+</div>
+
+
+<div id="loadingModel" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <div style="width:800px">
+      <h2 style="display:inline; margin-left: 330px;">請等候...</h2>
+    </div>
+  </div>
+
+</div>
+
+<div id="createModel" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close" onclick="closeCreateModel();">&times;</span>
+      <!-- <input type="text" id="editTypeInput" title="Enter new title"> -->
+      <!-- <input type="text" id="editContentInput" title="Enter new content">    -->
+      <div style="width:800px">
+        <span><h2 style="display:inline;">新增備註</h2></span><span style="font-size: 14px; display:inline; margin-left: 20px;">( *為必填項目 )</span> 
+      </div>
+      <br>
+      <form id="createForm"> 
+        電話號碼*:  <input id="createPhoneNumberInput" type="text" name="phoneNo" placeholder="請輸入電話號碼.." title="請輸入電話號碼" style="width:195px; line-height: 12px; margin-left: 22px;">
+        <br> <br>
+        名字*:  <input id="createNameInput" type="text" name="name" placeholder="請輸入名字.." title="請輸入名字" style="width:195px; line-height: 12px; margin-left: 50px;"> 
+        <br> <br>  
+        標題*:   
+        <!-- <input id="createTitleInput" type="select" name="title" title="請輸入標題" style="width:800px"> -->
+        <select id="createTitleInput" name="title" title="請輸入標題" onchange="console.log(document.getElementById('createTitleInput').value); displayCreateOtherInput();" style="margin-left: 50px; width:200px; line-height: 22px;">
+          <option value="膳食">膳食</option>
+          <option value="環境及設備">環境及設備</option>
+          <option value="醫療查詢">醫療查詢</option>
+          <option value="other" >其他</option>
+        </select>
+        <input disabled id="createOtherInput" type="text" name="title" title="請輸入" placeholder="如選擇其他，請註明.." style="width:300px; margin-left: 30px;"><br> <br>
+        備註*:  <br>  <textarea id="createContentInput"  rows="9" type="text" name="content" title="請輸入備註" style="width:800px; height: 230px;"></textarea><br><br>
+        回覆:  <br>  <textarea id="createReplyInput"  rows="9" type="text" name="reply" title="請輸入回覆" style="width:800px; height: 130px;"></textarea><br><br>
+        跟進人員*:  <input id="createFollowedByInput" type="text" name="followedBy" placeholder="請輸入跟進人員.." title="請輸入跟進人員" style="width:195px; line-height: 12px; margin-left: 22px;"><br> <br>  
+        狀態*:   
+        <!-- <input id="createTitleInput" type="select" name="title" title="請輸入標題" style="width:800px"> -->
+        <select id="createStatusInput" name="status" title="請輸入狀態" style="margin-left: 50px; width:200px; line-height: 22px;">
+          <option value="Open">處理中</option>
+          <option value="Close">已處理</option>
+        </select>
+
+        <br> <br><br>  
+        </form> 
+        <button type="submit" onclick="postCallLogs(document.getElementById('createPhoneNumberInput').value, document.getElementById('createNameInput').value, document.getElementById('createTitleInput').value, document.getElementById('createContentInput').value, document.getElementById('createReplyInput').value, document.getElementById('createFollowedByInput').value, document.getElementById('createStatusInput').value);">儲存</button>
+        <button type="submit" onclick="resetCreatingInputDefaultValues();displayCreateOtherInput()">重置</button>
+        <button type="submit" onclick="closeCreateModel();">取消</button>
+    </div>
+  
+  </div>
+
+
+
+<!-- The Modal -->
+<div id="editModel" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close" onclick="closeEditModel();">&times;</span>
+    <div style="width:800px">
+      <span><h2 style="display:inline;">編輯備註</h2></span><span style="font-size: 14px; display:inline; margin-left: 20px;">( *為必填項目 )</span> 
+    </div>
+    <br>
+    <form id="editForm"> 
+      電話號碼*:  <input disabled id="editPhoneNumberInput" type="text" name="phoneNo" placeholder="請輸入電話號碼.." title="請輸入電話號碼" style="width:200px; line-height: 12px; margin-left: 22px;"><br> <br>  
+      名字*:  <input id="editNameInput" type="text" name="name" placeholder="請輸入名字.." title="請輸入名字" style="width:195px; line-height: 12px; margin-left: 50px;"> 
+      <br> <br>  
+      標題*:   
+      <!-- <input id="createTitleInput" type="select" name="title" title="請輸入標題" style="width:800px"> -->
+      <select id="editTypeInput" name="title" title="請輸入標題" onchange="console.log(document.getElementById('editTypeInput').value); displayEditOtherInput();" style="margin-left: 50px; width:200px; line-height: 22px;">
+        <option id="foodOption" value="膳食">膳食</option>
+        <option id="environmentOption" value="環境及設備">環境及設備</option>
+        <option id="medicalOption" value="醫療查詢">醫療查詢</option>
+        <option id="otherOption" value="other" >其他</option>
+      </select>
+      <input disabled id="editOtherInput" type="text" name="title" title="請輸入" placeholder="如選擇其他，請註明.." style="width:300px; margin-left: 30px;"><br> <br>
+      備註*:  <br>  <textarea id="editContentInput"  rows="9" type="text" name="content" title="請輸入備註" style="width:800px; "></textarea><br><br>
+      回覆:  <br> <textarea id="editReplyInput"  rows="9" type="text" name="reply" title="請輸入回覆" style="width:800px; height: 130px;"></textarea><br><br>
+      跟進人員*:  <input id="editFollowedByInput" type="text" name="followedBy" placeholder="請輸入跟進人員.." title="請輸入跟進人員" style="width:195px; line-height: 12px; margin-left: 22px;"><br> <br> 
+      狀態*:   
+      <!-- <input id="createTitleInput" type="select" name="title" title="請輸入標題" style="width:800px"> -->
+      <select id="editStatusInput" name="status" title="請輸入狀態" style="margin-left: 50px; width:200px; line-height: 22px;">
+        <option id="openOption" value="Open">處理中</option>
+        <option id="closeOption" value="Close">已處理</option>
+      </select>
+
+      <br> <br><br>  
+      </form> 
+
+
+
+
+
+    
+    <!-- <input type="text" id="editTypeInput" title="Enter new title"> -->
+    <!-- <input type="text" id="editContentInput" title="Enter new content">    -->
+    <!-- <form id="editForm"> 
+      電話號碼*: <br> <br> <input disabled id="editPhoneNumberInput" type="text" name="phoneno" placeholder="請輸入電話號碼" title="請輸入電話號碼" style="width:800px"><br> <br>  <br> 
+        標題*:  <br>  <br> <input id="editTypeInput" type="text" name="title" title="請輸入標題" style="width:800px">
+        <input disabled id="editOtherInput" type="text" name="title" title="請輸入" placeholder="請選擇其他，請註明.." style="width:800px"><br> <br> <br>  
+        備註*:  <br>  <br> <textarea id="editContentInput" rows="9" type="text" name="content" title="請輸入備註" style="width:800px"></textarea><br><br>  <br> 
+
+      </form>  -->
+      <button type="submit" onclick="putCallLogs(document.getElementById('editPhoneNumberInput').value, document.getElementById('editNameInput').value, document.getElementById('editTypeInput').value, document.getElementById('editContentInput').value,document.getElementById('editReplyInput').value, document.getElementById('editFollowedByInput').value, document.getElementById('editStatusInput').value);">儲存</button>
+      <button type="submit" onclick="resetEditingInputDefaultValues();setDefaultEditTitle();">重置</button>
+      <button type="submit" onclick="deleteCovidRecord();">刪除</button>
+      <button type="submit" onclick="closeEditModel();">取消</button>
+  </div>
+
+</div>
+
+
+
+
+</table>
+
+<script>
+
+</script>
+
+</body>
+</html>
